@@ -1,0 +1,73 @@
+name: Go Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+
+    - name: Setup zip
+      run: sudo apt -y install zip unzip
+
+    - name: Create BIN dirs
+      run: |
+        mkdir bin
+        mkdir bin/linux
+        mkdir bin/windows
+        mkdir bin/darwin
+
+    - name: Copy Data & Logs
+      run: |
+        cp -R data bin/linux/
+        cp -R data bin/windows/
+        cp -R data bin/darwin/
+        cp -R logs bin/linux/
+        cp -R logs bin/windows/
+        cp -R logs bin/darwin/
+
+    - name: Build Linux
+      run: |
+        env GOOS=linux GOARCH=amd64 go build -o bin/linux/SATE -v .
+
+    - name: Build Windows
+      run: |
+        env GOOS=windows GOARCH=amd64 go build -o bin/windows/SATE.exe -v .
+
+    - name: Build Darwin
+      run: |
+        env GOOS=darwin GOARCH=amd64 go build -o bin/darwin/SATE -v .
+
+    - name: Archive Releases
+      run: |
+        cd bin/linux
+        tar -czvf ../../SATE_linux_amd64.tar.gz ./SATE ./data ./logs
+        cd ../windows
+        zip -r ../../SATE_windows_amd64.zip ./SATE.exe ./data ./logs
+        cd ../darwin
+        zip -r ../../SATE_darwin_amd64.zip ./SATE ./data ./logs
+        cd ../..
+
+    - name: Create Release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: false
+        title: "SATE"
+        files: |
+          *.zip
+          *.tar.gz
