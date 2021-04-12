@@ -17,7 +17,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-const version = "0.9.1"
+const version = "0.9.2"
 
 // Create the widgets for the UI layout.
 var gameLog = widgets.NewList()
@@ -41,7 +41,7 @@ func main() {
 	help := flag.Bool("help", false, "Show this help")
 	ver := flag.Bool("version", false, "Show your current version of SATE.")
 	update := flag.Bool("update", false, "Update SATE automatically")
-	slug := flag.String("slug", "joshschmille/sate", "Repository of this command")
+	slug := flag.String("slug", "joshschmille/sate-testing", "Repository of this command")
 
 	flag.Usage = usage
 	flag.Parse()
